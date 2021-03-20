@@ -1,16 +1,26 @@
 import requests
 import datetime
+from requests.exceptions import HTTPError
 
 def delete_mark(str, mark):
+    #Удаляет из строки ненужный символ
     new_str = ""
     for x in str:
         if x != mark:
             new_str +=x
     return  new_str
 
-def get_get (page_oi, page_status):
-    start_date = datetime.datetime.now().date() -
-
+def get_get (page):
+    #Получает url и извлекает из него объект json
+    try:
+        result = requests.get(page)
+    except HTTPError as http_err:
+        print(f"Ошибка HTTP: {http_err}!")
+    except Exception as err:
+        print(f"Что-пошло не так: {err}, при запросе к странице {page}!")
+    else:
+        print(f"Запрос к странице: {page} \n Успешен!")
+        return result.json()
 
 with requests.Session() as se:
     se.headers = {
@@ -19,48 +29,45 @@ with requests.Session() as se:
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
         "Accept-Language": "en"
     }
-site_date = "https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT"
-select_date = requests.get(site_date).json()
-start_date = datetime.date(2021, 1, 1)
-current_date = datetime.datetime.now().date()
-file_name = input("Введите имя файла")
-file = open(file_name, 'w')
-while start_date != current_date:
-    string_date = delete_mark(str(start_date), '-')
-    site = "https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/323/{0}/P?tradeDate={0}&pageSize=500&_=1616223940817".format(string_date)
-    html = requests.get(site).json()
-    date = html['tradeDate']
-    date_with_point = date[0] + date[1] + date[2] + date[3] + '.' + date[4] + date[5] + '.' + date[6] + date[7]
 
-    date_flag = "FINAL"
-    for trade_day in select_date:
-        if trade_day['tradeDate'] == html['tradeDate'] and trade_day['reportType'] == 'PRELIMINARY':
-            date_flag = "PRELIMINARY"
-            break
+page_oi = "https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/323/{0}/P?tradeDate={0}&pageSize=500&_=1616223940817"
+page_status_oi = "https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT" #финальные данные или предварительные, берем данные с этой страницы
 
+status_dict = get_get(page_status_oi)
+file_name = "chicago_srw_wheat_cbot.txt"
+file = file = open(file_name, 'w')
+current_date = datetime.datetime.now().date() - datetime.timedelta(40)
+today_date = datetime.datetime.now().date()
 
-    totals_oi = html['totals']['atClose']
-    print(totals_oi)
-    totals_oi = delete_mark(totals_oi, ',')
+while current_date != today_date:
+    string_date = delete_mark(str(current_date), '-')
+    oi_dict = get_get(page_oi.format(string_date))
+
+    totals_oi = oi_dict['totals']['atClose']
     if totals_oi == '0':
-        start_date = start_date + datetime.timedelta(1)
-        print("ogromni hui")
+        print(f"Дата {current_date}, не записывается в файл(торги не велись)\n")
+        current_date = current_date + datetime.timedelta(1)
         continue
 
+    status_flag = "FINAL"
+    for trade_day in status_dict:
+        if trade_day['tradeDate'] == oi_dict['tradeDate'] and trade_day['reportType'] == 'PRELIMINARY':
+            status_flag = "PRELIMINARY"
+            break
 
+    date_with_point = string_date[0] + string_date[1] + string_date[2] + string_date[3] + '.' + string_date[4] + string_date[5] + '.' + string_date[6] + string_date[7]
+    totals_oi = delete_mark(totals_oi, ',')
+    file.write(f"{date_with_point}\t{status_flag}\tTOTAL\t{totals_oi}\t")
 
-    file.write(date_with_point + '\t')
-    file.write(date_flag + '\t' + "TOTAL" + '\t')
-    file.write(totals_oi + '\t')
-
-    for month in html['monthData']:
+    for month in oi_dict['monthData']:
         month_name = month['month']
         month_oi = month['atClose']
         month_oi = delete_mark(month_oi, ',')
-        file.write(month_name + '\t' + month_oi + '\t')
+        file.write(f"{month_name}\t{month_oi}\t")
 
     file.write('\n')
-    start_date = start_date + datetime.timedelta(1)
+    print(f"Данные по дате {current_date} успешно добавлены!\n")
+    current_date = current_date + datetime.timedelta(1)
 
-print("Done")
+print(f"Файл {file_name} успешно обработан!\n")
 
