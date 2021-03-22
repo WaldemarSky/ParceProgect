@@ -3,180 +3,53 @@ import datetime
 from requests.exceptions import HTTPError
 import os
 
+page_exchanges = "https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange="
+page_oi_profiles = "https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/{0}/{1}/{2}?tradeDate={1}"
 
-
-pages_oi = {
-    'chicago_srw_wheat_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/323/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'kc_hrw_wheat_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/348/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'corn_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/300/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'soybean_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/320/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'soybean_meal_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/310/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'soybean_oil_cbot': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/312/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'rough_rice': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/336/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'cash-settled_butter_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/26/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'cash-settled_cheese_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/5201/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'class_iii_milk_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/27/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'feeder_cattle_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/34/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'lean_hog_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/19/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'live_cattle_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/22/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'copper_comex': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/438/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=COMEX'
-    },
-    'gold_comex': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/437/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=COMEX'
-    },
-    'silver_comex': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/458/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=COMEX'
-    },
-    'platinum_nymex': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/446/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=NYMEX'
-    },
-    'palladium_nymex': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/445/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=NYMEX'
-    },
-    'aluminum_mw_us_transaction_premium_platts(25mt)': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/6746/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=COMEX'
-    },
-    'us_midwest_domestic_hot-rolled_coil_steel_(cru)_index': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/2508/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=COMEX'
-    },
-    'wti_crude_oil': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/425/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=NYMEX'
-    },
-    'henry_hub_natural_gas': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/444/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=NYMEX'
-    },
-    'e-mini_s&p500': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/133/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'e-mini_russell_2000_index': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/8314/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'e-mini_nasdaq-100': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/146/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'e-mini_s&p_midcap_400': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/166/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    's&p500': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/132/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    '10_Year_t-note': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/316/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    '5_Year_t-note': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/329/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    '2_Year_t-note': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/303/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    '30_day_federal_funds': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/305/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'us_treasury_bond': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/307/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'ultra_10-year_us_treasury_note': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/7978/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'ultra_us_treasury_bond': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/3141/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CBOT'
-    },
-    'euro_fx': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/58/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'british_pound': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/42/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'canadian_dollar': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/48/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'japanese_yen': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/69/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'swiss_franc': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/86/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'russian_ruble': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/83/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'eurodollar': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/1/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    },
-    'bitcoin_cme': {
-        'page_oi': 'https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/8478/{0}/{1}?tradeDate={0}',
-        'page_status': 'https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange=CME'
-    }
+oi_profiles = {
+    'chicago_srw_wheat_cbot':       {'number': '323',   'exchange': 'CBOT'},
+    'kc_hrw_wheat_cbot':            {'number': '348',   'exchange': 'CBOT'},
+    'corn_cbot':                    {'number': '300',   'exchange': 'CBOT'},
+    'soybean_cbot':                 {'number': '320',   'exchange': 'CBOT'},
+    'soybean_meal_cbot':            {'number': '310',   'exchange': 'CBOT'},
+    'soybean_oil_cbot':             {'number': '312',   'exchange': 'CBOT'},
+    'rough_rice':                   {'number': '336',   'exchange': 'CBOT'},
+    'cash-settled_butter_cme':      {'number': '26',    'exchange': 'CME'},
+    'cash-settled_cheese_cme':      {'number': '5201',  'exchange': 'CME'},
+    'class_iii_milk_cme':           {'number': '27',    'exchange': 'CME'},
+    'feeder_cattle_cme':            {'number': '34',    'exchange': 'CME'},
+    'lean_hog_cme':                 {'number': '19',    'exchange': 'CME'},
+    'live_cattle_cme':              {'number': '22',    'exchange': 'CME'},
+    'copper_comex':                 {'number': '438',   'exchange': 'COMEX'},
+    'gold_comex':                   {'number': '437',   'exchange': 'COMEX'},
+    'silver_comex':                 {'number': '458',   'exchange': 'COMEX'},
+    'platinum_nymex':               {'number': '446',   'exchange': 'NYMEX'},
+    'palladium_nymex':              {'number': '445',   'exchange': 'NYMEX'},
+    'aluminum_mw_us_transaction_premium_platts(25mt)_comex':        {'number': '6746', 'exchange': 'COMEX'},
+    'us_midwest_domestic_hot-rolled_coil_steel_(cru)_index_comex':  {'number': '2508', 'exchange': 'COMEX'},
+    'wti_crude_oil_nymex':          {'number': '425',   'exchange': 'NYMEX'},
+    'henry_hub_natural_gas_nymex':  {'number': '444',   'exchange': 'NYMEX'},
+    'e-mini_s&p500_cme':            {'number': '133',   'exchange': 'CME'},
+    'e-mini_russell_2000_index_cme':{'number': '8314',  'exchange': 'CME'},
+    'e-mini_nasdaq-100_cme':        {'number': '146',   'exchange': 'CME'},
+    'e-mini_s&p_midcap_400_cme':    {'number': '166',   'exchange': 'CME'},
+    's&p500_cme':                   {'number': '132',   'exchange': 'CME'},
+    '10_Year_t-note_cbot':          {'number': '316',   'exchange': 'CBOT'},
+    '5_Year_t-note_cbot':           {'number': '329',   'exchange': 'CBOT'},
+    '2_Year_t-note_cbot':           {'number': '303',   'exchange': 'CBOT'},
+    '30_day_federal_funds_cbot':    {'number': '305',   'exchange': 'CBOT'},
+    'us_treasury_bond_cbot':        {'number': '307',   'exchange': 'CBOT'},
+    'ultra_10-year_us_treasury_note_cbot':                          {'number': '7978', 'exchange': 'CBOT'},
+    'ultra_us_treasury_bond_cbot':  {'number': '3141',  'exchange': 'CBOT'},
+    'euro_fx_cme':                  {'number': '58',    'exchange': 'CME'},
+    'british_pound_cme':            {'number': '42',    'exchange': 'CME'},
+    'canadian_dollar_cme':          {'number': '48',    'exchange': 'CME'},
+    'japanese_yen_cme':             {'number': '69',    'exchange': 'CME'},
+    'swiss_franc_cme':              {'number': '86',    'exchange': 'CME'},
+    'russian_ruble_cme':            {'number': '83',    'exchange': 'CME'},
+    'eurodollar_cme':               {'number': '1',     'exchange': 'CME'},
+    'bitcoin_cme':                  {'number': '8478',  'exchange': 'CME'},
 }
-
-
 
 file_directory = ""
 
@@ -195,7 +68,7 @@ def get_get (page):
     except HTTPError as http_err:
         print(f"Ошибка HTTP: {http_err}!")
     except Exception as err:
-        print(f"Что-пошло не так goпри запросе к странице {page}: {err}")
+        print(f"Что-пошло не так при запросе к странице {page}: {err}")
     else:
         print(f"Запрос к странице: {page} \n Успешен!")
         return result.json()
@@ -203,9 +76,11 @@ def get_get (page):
 def parse_to_file(instrument):
     try:
         print(f"Обработка инструмента {instrument}")
-        status_dict = get_get(pages_oi[instrument]['page_status'])
+        page_status = page_exchanges + oi_profiles[instrument]['exchange']
+        status_dict = get_get(page_status)
         if file_directory == "":
-            file = open(f"{instrument}.txt", 'w')
+            directory_folder = r"{}\{}.txt".format(os.path.dirname(os.path.abspath(__file__)), instrument)
+            file = open(directory_folder, 'w')
         else:
             directory_folder = r"{}\{}.txt".format(file_directory, instrument)
             folder_path = os.path.dirname(directory_folder)  # Путь к папке с файлом
@@ -218,7 +93,8 @@ def parse_to_file(instrument):
 
         while current_date <= today_date:
             string_date = delete_mark(str(current_date), '-')
-            oi_dict = get_get(pages_oi[instrument]['page_oi'].format(string_date, 'F'))
+            page_oi = page_oi_profiles.format(oi_profiles[instrument]['number'], string_date, 'F')
+            oi_dict = get_get(page_oi)
 
             totals_oi = oi_dict['totals']['atClose']
 
@@ -230,7 +106,8 @@ def parse_to_file(instrument):
 
             if totals_oi == '0':
                 if status_flag == "PRELIM":
-                    oi_dict = get_get(pages_oi[instrument]['page_oi'].format(string_date, 'P'))
+                    page_oi = page_oi_profiles.format(oi_profiles[instrument]['number'], string_date, 'P')
+                    oi_dict = get_get(page_oi)
                     totals_oi = oi_dict['totals']['atClose']
                 else:
                     print(f"Дата {current_date}, не записывается в файл {instrument}.txt (торги не велись)\n")
@@ -257,6 +134,10 @@ def parse_to_file(instrument):
     else:
         print(f"Файл {instrument}.txt успешно обработан!\n")
 
+def keep_window_open():
+    a = ""
+    while a != "~~":
+        a = input("Для выхода из программы введите '~~'")
 
 try:
     with requests.Session() as se:
@@ -266,10 +147,9 @@ try:
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
             "Accept-Language": "en"
         }
-    instrument_list = list(pages_oi.keys())
+    instrument_list = list(oi_profiles.keys())
 
     my_instrument_list = instrument_list
-    file_directory = ""
 
     print("Добро пожаловать в программу-парсер Open Interest\n")
     print("Для выбора копируемых биржевых инструментов введите 1, для ввода директории копирования 2.\nДля старта программы введите go\n")
@@ -282,7 +162,11 @@ try:
         a = input(">>>")
         if a == '1':
             my_instrument_list = []
-            b = input("Введите через пробел номера копируемых инстументов:\n1 - chicago_srw_wheat_cbot,\n2 - bitcoin_cme\n>>>").split()
+            print("Введите через пробел номера копируемых инстументов:")
+            for i in range(1, len(instrument_list)+ 1):
+                print(f"{i} - {instrument_list[i-1]}")
+            b = input(">>>").split()
+
             num_list = list(map(int, b))
             for x in num_list:
                 if x > 0 and x <= len(instrument_list):
@@ -299,8 +183,9 @@ try:
 
 except Exception as err:
     print(f"Что-пошло не так при работе программы: {err}")
+    keep_window_open()
+
 else:
     print("Программа завершена")
-    while a != "~~":
-        a = input("Для выхода из программы введите '~~'")
+    keep_window_open()
 
