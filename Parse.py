@@ -150,7 +150,7 @@ def parse_to_file(instrument, date, recording_mode):
 
 def red_end_line(file, number_line_fr_end = 0):
     count_n = -1
-    pos = 1
+    pos = 2
     while count_n != number_line_fr_end:
         str = ""
         ch = ''
@@ -159,7 +159,7 @@ def red_end_line(file, number_line_fr_end = 0):
             file.seek(-pos, 2)
             ch = file.read(1)
             ch = ch.decode('UTF-8')
-            if ch == '\n':
+            if ch == '\n' or ch == '\r':
                 break
             str = ch + str
         count_n +=1
