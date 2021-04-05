@@ -141,7 +141,7 @@ def parse_to_file(instrument, date, recording_mode):
             file.write('\n')
             print(f"Данные по дате {current_date} для инструмента {instrument} успешно добавлены!\n")
             current_date = current_date + datetime.timedelta(1)
-            time.sleep(5)
+            time.sleep(1)
 
     except Exception as err:
         print(f"Что-пошло не так при обработке инструмента {instrument}: {err}")
@@ -177,7 +177,8 @@ def get_seek_endline(file, number_line_fr_end = 0):
             if ch == '\n':
                 break
         count_n += 1
-    return pos
+    return pos-1
+
 
 def update():
     if file_directory == "":
@@ -207,6 +208,7 @@ def update():
             date += datetime.timedelta(1)
 
         file_instr.close()
+
         parse_to_file(instrument, date, 'a+')
 
 
@@ -259,6 +261,7 @@ try:
                 break
             if a == 'up':
                 print("Запуск обновления инструментов...")
+
                 update()
                 break
 
