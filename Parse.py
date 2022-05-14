@@ -81,7 +81,6 @@ oi_profiles = {
     'e-mini_russell_2000_index_cme':{'number': '8314',  'exchange': 'CME'},
     'e-mini_nasdaq-100_cme':        {'number': '146',   'exchange': 'CME'},
     'e-mini_s&p_midcap_400_cme':    {'number': '166',   'exchange': 'CME'},
-    's&p500_cme':                   {'number': '132',   'exchange': 'CME'},
     '10_year_t-note_cbot':          {'number': '316',   'exchange': 'CBOT'},
     '5_year_t-note_cbot':           {'number': '329',   'exchange': 'CBOT'},
     '2_year_t-note_cbot':           {'number': '303',   'exchange': 'CBOT'},
