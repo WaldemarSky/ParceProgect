@@ -8,13 +8,51 @@ import fake_useragent
 page_exchanges = "https://www.cmegroup.com/CmeWS/mvc/Volume/TradeDates?exchange="
 page_oi_profiles = "https://www.cmegroup.com/CmeWS/mvc/Volume/Details/F/{0}/{1}/{2}?tradeDate={1}"
 
-user = fake_useragent.UserAgent().random
+https_proxy = "http://47.242.195.5:5204"
+proxyDict = {
+    "http": https_proxy
+}
+ua = fake_useragent.UserAgent()
+#ua.update()
+user = ua.chrome
+print(user)
+
+# header = {
+# "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+# "Accept-Encoding": "gzip, deflate",
+# "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+# "Dnt": "1",
+# "Host": "httpbin.org",
+# "Upgrade-Insecure-Requests": "1",
+# "User-Agent": user
+# }
+
 
 header = {
-    'user-agent': user
+"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+"Accept-Encoding": "gzip, deflate, br",
+"Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+# "Host": "httpbin.org",
+# "Referer": "https://www.scrapehero.com/",
+# "Sec-Ch-Ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+# "Sec-Ch-Ua-Mobile": "?0",
+# "Sec-Fetch-Dest": "document",
+# "Sec-Fetch-Mode": "navigate",
+# "Sec-Fetch-Site": "cross-site",
+# "Sec-Fetch-User": "?1",
+# "Upgrade-Insecure-Requests": "1",
+"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36",
+# "X-Amzn-Trace-Id": "Root=1-60ce3b35-535b0fbd44d6849c04589866"
 }
 
+
+# header = {
+#     'User-Agent': user
+# }
+
 se = requests.session()
+se.headers = header
+se.proxies = proxyDict
 
 oi_profiles = {
     'chicago_srw_wheat_cbot':       {'number': '323',   'exchange': 'CBOT'},
@@ -61,6 +99,7 @@ oi_profiles = {
     'russian_ruble_cme':            {'number': '83',    'exchange': 'CME'},
     'eurodollar_cme':               {'number': '1',     'exchange': 'CME'},
     'bitcoin_cme':                  {'number': '8478',  'exchange': 'CME'},
+    'bitcoin_micro_cme':            {'number': '9024',  'exchange': 'CME'}
 }
 
 file_directory = ""
@@ -77,7 +116,8 @@ def delete_mark(str, mark):
 def get_get (page):
     #Получает url и извлекает из него объект json
     try:
-        result = requests.get(page, headers=header)
+        result = se.get(page)
+        print(result)
     except HTTPError as http_err:
         print(f"Ошибка HTTP: {http_err}!")
     except Exception as err:
@@ -134,6 +174,7 @@ def parse_to_file(instrument, date, recording_mode):
 
             for month in oi_dict['monthData']:
                 month_name = month['month']
+                month_name = month_name[:3] + " " + month_name[-2:]
                 month_oi = month['atClose']
                 month_oi = delete_mark(month_oi, ',')
                 file.write(f"{month_name}\t{month_oi}\t")
@@ -141,10 +182,11 @@ def parse_to_file(instrument, date, recording_mode):
             file.write('\n')
             print(f"Данные по дате {current_date} для инструмента {instrument} успешно добавлены!\n")
             current_date = current_date + datetime.timedelta(1)
-            time.sleep(1)
+            time.sleep(2)
 
     except Exception as err:
         print(f"Что-пошло не так при обработке инструмента {instrument}: {err}")
+        parse_to_file(instrument, date, recording_mode)
     else:
         print(f"Файл {instrument}.txt успешно обработан!\n")
 
@@ -181,6 +223,7 @@ def get_seek_endline(file, number_line_fr_end = 0):
 
 
 def update():
+    result = se.get("https://www.cmegroup.com/trading/agricultural/grain-and-oilseed/soybean_quotes_volume_voi.html#tradeDate=20210616")
     if file_directory == "":
         directory_folder = r"{}".format(os.path.dirname(os.path.abspath(__file__)))
     else:
@@ -219,13 +262,9 @@ def keep_window_open():
         a = input("Для выхода из программы введите '~~'")
 
 try:
-    with requests.Session() as se:
-        se.headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36",
-            "Accept-Encoding": "gzip, deflate",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-            "Accept-Language": "en"
-        }
+    #with requests.Session() as se:
+        #se.proxies = proxyDict
+        #se.headers = header
         instrument_list = list(oi_profiles.keys())
 
         my_instrument_list = instrument_list
@@ -261,7 +300,6 @@ try:
                 break
             if a == 'up':
                 print("Запуск обновления инструментов...")
-
                 update()
                 break
 
@@ -272,4 +310,3 @@ except Exception as err:
 else:
     print("Программа завершена")
     keep_window_open()
-
