@@ -17,17 +17,6 @@ ua = fake_useragent.UserAgent()
 user = ua.chrome
 print(user)
 
-# header = {
-# "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-# "Accept-Encoding": "gzip, deflate",
-# "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
-# "Dnt": "1",
-# "Host": "httpbin.org",
-# "Upgrade-Insecure-Requests": "1",
-# "User-Agent": user
-# }
-
-
 header = {
 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 "Accept-Encoding": "gzip, deflate, br",
@@ -45,11 +34,6 @@ header = {
 # "X-Amzn-Trace-Id": "Root=1-60ce3b35-535b0fbd44d6849c04589866"
 }
 
-
-# header = {
-#     'User-Agent': user
-# }
-
 se = requests.session()
 se.headers = header
 se.proxies = proxyDict
@@ -62,8 +46,8 @@ oi_profiles = {
     'soybean_meal_cbot':            {'number': '310',   'exchange': 'CBOT'},
     'soybean_oil_cbot':             {'number': '312',   'exchange': 'CBOT'},
     'rough_rice_cbot':              {'number': '336',   'exchange': 'CBOT'},
-    'cash-settled_butter_cme':      {'number': '26',    'exchange': 'CME'},
-    'cash-settled_cheese_cme':      {'number': '5201',  'exchange': 'CME'},
+    'cash_settled_butter_cme':      {'number': '26',    'exchange': 'CME'},
+    'cash_settled_cheese_cme':      {'number': '5201',  'exchange': 'CME'},
     'class_iii_milk_cme':           {'number': '27',    'exchange': 'CME'},
     'feeder_cattle_cme':            {'number': '34',    'exchange': 'CME'},
     'lean_hog_cme':                 {'number': '19',    'exchange': 'CME'},
@@ -73,20 +57,20 @@ oi_profiles = {
     'silver_comex':                 {'number': '458',   'exchange': 'COMEX'},
     'platinum_nymex':               {'number': '446',   'exchange': 'NYMEX'},
     'palladium_nymex':              {'number': '445',   'exchange': 'NYMEX'},
-    'aluminum_mw_us_transaction_premium_platts(25mt)_comex':        {'number': '6746', 'exchange': 'COMEX'},
-    'us_midwest_domestic_hot-rolled_coil_steel_(cru)_index_comex':  {'number': '2508', 'exchange': 'COMEX'},
+    'aluminum_mw_us_transaction_premium_platts_25mt_comex':        {'number': '6746', 'exchange': 'COMEX'},
+    'us_midwest_domestic_hot_rolled_coil_steel_cru_index_comex':  {'number': '2508', 'exchange': 'COMEX'},
     'wti_crude_oil_nymex':          {'number': '425',   'exchange': 'NYMEX'},
     'henry_hub_natural_gas_nymex':  {'number': '444',   'exchange': 'NYMEX'},
-    'e-mini_s&p500_cme':            {'number': '133',   'exchange': 'CME'},
-    'e-mini_russell_2000_index_cme':{'number': '8314',  'exchange': 'CME'},
-    'e-mini_nasdaq-100_cme':        {'number': '146',   'exchange': 'CME'},
-    'e-mini_s&p_midcap_400_cme':    {'number': '166',   'exchange': 'CME'},
-    '10_year_t-note_cbot':          {'number': '316',   'exchange': 'CBOT'},
-    '5_year_t-note_cbot':           {'number': '329',   'exchange': 'CBOT'},
-    '2_year_t-note_cbot':           {'number': '303',   'exchange': 'CBOT'},
-    '30_day_federal_funds_cbot':    {'number': '305',   'exchange': 'CBOT'},
+    'e_mini_sp500_cme':             {'number': '133',   'exchange': 'CME'},
+    'e_mini_russell_2000_index_cme':{'number': '8314',  'exchange': 'CME'},
+    'e_mini_nasdaq_100_cme':        {'number': '146',   'exchange': 'CME'},
+    'e_mini_sp_midcap_400_cme':    {'number': '166',   'exchange': 'CME'},
+    'ten_year_t_note_cbot':          {'number': '316',   'exchange': 'CBOT'},
+    'five_year_t_note_cbot':           {'number': '329',   'exchange': 'CBOT'},
+    'two_year_t_note_cbot':           {'number': '303',   'exchange': 'CBOT'},
+    'thirty_day_federal_funds_cbot':    {'number': '305',   'exchange': 'CBOT'},
     'us_treasury_bond_cbot':        {'number': '307',   'exchange': 'CBOT'},
-    'ultra_10-year_us_treasury_note_cbot':                          {'number': '7978', 'exchange': 'CBOT'},
+    'ultra_10_year_us_treasury_note_cbot':                          {'number': '7978', 'exchange': 'CBOT'},
     'ultra_us_treasury_bond_cbot':  {'number': '3141',  'exchange': 'CBOT'},
     'euro_fx_cme':                  {'number': '58',    'exchange': 'CME'},
     'british_pound_cme':            {'number': '42',    'exchange': 'CME'},
